@@ -1,0 +1,85 @@
+plugins {
+    id "com.dorongold.task-tree" version "2.1.0"
+}
+
+//Uses GROOVY DSL
+
+//keyword task is a method call on an api available on the gradle.build script
+
+// () for method calls are optional, helloWorld, or the name is actually the first parameter of the task method call 
+
+// This would also work -> task( "helloWorld" ) {
+
+//this method returns a new instance of type task
+
+task helloWorld (description: "THIS IS MY TASK DESCRIPTION") {
+    
+    // the do last statement ensures the method included is called at run time - life cylce?
+    doLast {
+        //println is a method provided by groovy to print to stdout
+        println "Hello world with Groovy DSL"
+    }
+}
+
+task byeWorld {
+
+    doLast {
+        println "byWorld - groovy dsl"
+    }
+}
+
+task getCustomvar {
+    doFirst{
+        println "+++++++++++"
+        println myCustomVar
+        println "+++++++++++"
+    }
+
+} 
+
+task displayTaskLifeCycle {
+    //if not in a method call will happen when any task is run 
+println "============ IN THE MIDDLE"
+    doLast{
+        println "+++++++++++"
+        println "GOING LAST"
+        println "+++++++++++"
+    }
+    doFirst{
+        println "+++++++++++"
+        println "GOING FIRST"
+        println "+++++++++++"
+    }
+
+} 
+
+task runADHOC {
+
+    doLast {
+        println "I am an AD HOC task, I automatically extend the default task"
+    }
+}
+
+//once we define a copy type we can use its api, which comes with the methods from and into
+task copyFiles(type: Copy){
+    //from here, could be any file path
+         from "./"
+         //will create if doesnt exist
+         into ".build/docs"
+         //copy the markdown files
+         include "**/*md"
+         //exclue emptydirs
+         includeEmptyDirs = false
+
+         
+      }
+
+
+task createZip (type: Zip){
+    from ".build/docs"
+    archiveName = "example.zip"
+    destinationDir = file(".build/dist")
+
+    //can make this task depend on the previuos one and hence make it do the copyFile task first
+    dependsOn copyFiles
+}

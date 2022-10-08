@@ -1,92 +1,192 @@
-# gradle course
+# GRADLE FUNDAMENTALS #  
 
+## 4 What is GRADLE ##
 
+- solves the problem of building and deploying an application once it is written
+- framework for building a project
+- turns java class, xml etc into jar and war files
+ 
+- Both builds the deployment artifacts and manages the dependencies
+ 
+- Artifacts can be : java source code, xml configuration files, audio or graphic files etc...
+- Predecessors to GRADLE include Maven, IVY and ANT. These are configured with XML which is not the most user friendly
 
-## Getting started
+- In 2007 Gradle was introduced, it is written in a Java variant called Groovy, this is much more user friendly because we are writhing configurations as code
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+### The 6 Key Pieces of Gradle ###
+1. Build File or build.gradle : must have a build file, 
+   - this is both a human and machine readable instruction file, 
+   - uses DSL (Domain Specific Language) at a higher level and Groovy (or Kotlin) at a low level.
+   - Default name is built gradle 
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+2. Constructs a Graph of Tasks
+   - tasks are detailed build build steps
+   - gradle parses the build.gradle to create a directed acyclic graph (DAG) of tasks, ie task1 -> task 2 -> task 3 ...
 
-## Add your files
+3. Gradle Executes the Tasks
+   - knows the order to do tasks in based on the DAG
+   - Each task produces an output used an an input by the next task
+   - it saves the output of each task (this step can help with performance improvement by caching tasks outputs for tasks that have not changed and skip the task on a re-build)
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+4. Manages Dependencies
+   - IE maven, plugins etc...
+   - Also manages transitive dependencies, ie: dependencies of dependencies
+   - Can also handle dependency versions
 
-```
-cd existing_repo
-git remote add origin https://gitlab.com/cfech44/gradle-course.git
-git branch -M main
-git push -uf origin main
-```
+5. Gradle uses Repositories
+   - public or local
 
-## Integrate with your tools
+6. Gradle is Self Updating
+   - gradle can update both itself and the dependencies it manages
 
-- [ ] [Set up project integrations](https://gitlab.com/cfech44/gradle-course/-/settings/integrations)
+## 5 Installing Gradle ##
+- can install with brew or manually
+- [gradle.org](https://gradle.org/install/)
 
-## Collaborate with your team
+         brew install gradle
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+Basic Terminology
+- Project - models a software component
+- Build script: contain automation instructions for a project
+- Task: defines executable automation instructions 
+- to see a helloWorld in gradle navigate too ./hello-world/build.gradle
+  - can run with ```gradle [taskName]```
 
-## Test and Deploy
+## 6 Gradle's DL ##
+- can mix in imperative logic 
+- can use GROOVY DSL or Kotlin DSL
+- can see kotlin example ./hello-world-kotlin/build.gradle.kts
+   - has to be named build.gradle.kts
+   - seems that by default a build.gradle will override build.gradle.kts if they are in the same directory, maybe some configuration to change this
 
-Use the built-in continuous integration in GitLab.
+## 7 Gradle Wrapper ##
+- Gradle API can have breaking changes during major version updates
+- maintaining multiple different gradle version on your machine for different projects in inconvenient 
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+- The Gradle wrapper is a set of files checked into version control with source code
+   - The wrapper standardizes a compatible gradle version fot he project
+   - It will the automatically download the defined version of Gradle
 
-***
+- You can create the gradle wrapper by running ```gradle wrapper```
+   - this will create a gradle folder that houses a gradle-wrapper.jar and a gradle-wrapper.properties 
+   - it also creates a gradlew shell script, and gradlew.bat(for windows)
+   - This now exposes the gradlew command within the project, to run the tasks now we can use ```.gradlew [task name]```
+   - when using gradlew gradle will automatically downloaded the distribution needed to run the task based on what was defined in the jar and properties files
+   - When using a wrapper it is no necessary to have gradle installed on your machine, however you do need it to create the wrapper
 
-# Editing this README
+- **With the wrapper method, other developers do not even need to install gradle on their machines, they can just checkout the code (as long as wrapper is store in VCS) and run gradle commands with ```./gradlew [taskName]```
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
+## 9 Build Files ##
+- Build file in a single project built 
+   - resides in root directory of project hierarchy
+   - contains all build logic
+   - can be hard to maintain 
 
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+- Build in multi-module build
+   - have a build.gradle that contains modules which contain their own build.gradle
+   - more maintainable and highly cohesive
+   - gradle can model each component as a project with dependencies of each other
 
-## Name
-Choose a self-explaining name for your project.
+- Settings File
+   - settings.gradle resides in root directory of project hierarchy
+   - can declare participating projects as modules
+   - change defaults such as project name 
+   - can set plugin management and authentication for private repos
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+- By default gradle defines the project name as the name of the root directory
+   - can run ```gradle projects``` to see all projects in the current folder and sub folders
+   - ./gradle-wrapper-hello-world/settings.gradle
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+- Gradle.properties
+  - ./gradle-wrapper-hello-world/gradle.properties
+  - resides in the root directory of project (for one offs) or ~/.gradle (for all projects on machine)
+  - can be used to pre-configure runtime behavior
+  - means to externalize custom key values pairs, can set versions, logging levels etc
+  - can access these values in the build script by key 
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+## 10 Tasks ##
+- defines an executable unit of work
+- actions contain logic to be executed a runtime
+- ad hoc tasks and tasks explicitly declare a type
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+### AD HOC vs Typed Tasks ###
+- AD hoc implements off-off simplistic actions by defining a doFirs or doLast
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+- Automatically extend the default task with out having to declare it 
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+ex: 
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+      task runADHOC {
+         doLast {
+            println "I am an AD HOC task, I automatically extend the default task"
+         }
+      }
+   
+- Typed tasks allow for more complex task logic, this task explicitly declares a type
+- does not necessarily need to define actions, may inherit them from the tasks it is extending 
+- copy type can copy files and directories from A to B
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+ex: 
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+      task copyFiles(type: Copy){
+         from "sourceFiles"
+         into "target"
+      }
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+another example: 
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+      task createZip (type: Zip){
+         from ".build/docs"
+         archiveName = "example.zip"
+         destinationDir = file(".build/dist")
 
-## License
-For open source projects, say how it is licensed.
+         //can make this task depend on the previous one and hence make it do the copyFile task first
+         dependsOn copyFiles
+      }
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+- depends on calls copyFiles before its code runs
+
+## DAG & Build Lifecycle Phases ##
+- https://docs.gradle.org/current/dsl/org.gradle.api.Task.html#N18B7E
+- https://docs.gradle.org/current/dsl/org.gradle.api.Task.html#N18C9B
+- 
+- directed acyclic graph
+- if A depends on B and A also depends on C, the B & C can run in any order, however they will both run before A
+
+- Can use mustRunAfter if we always want C to run before B
+- other common caveats are shouldRunAfter and finalized by
+   - mustRunAfter - 	Specifies that this task must run after all of the supplied tasks.
+   - shouldRunAfter - Specifies that this task should run after all of the supplied tasks.
+   - finalizedBy - Adds the given finalizer tasks for this task.
+
+### Direct Acyclic Graph ###
+- a task is represented as a node
+- task dependency is represented as graph edge
+<!-- ![dag example](./images/dag_example.png) -->
+- task A cannot depend on B while B depends on A
+
+- can run ```gradle [task] --dry-run ``` to see all gradle tasks/dependencies for that task
+
+- can use the [gradle task tree](https://github.com/dorongold/gradle-task-tree) plugin in order to render a task tree
+
+- can run ```gradlew tasks --all``` to see all gradle tasks available for the project
+
+- the DAG is built before any tasks is executed
+   - when a tasks is called to be executed gradle will:
+     
+     1.  Evaluate the instructions of the build scripts
+     2. create and configure tasks 
+     3. execute them in the correct order
+
+LifeCycle Phases: 
+
+1. Initialization phase
+   - evaluates the settings.gradle file, gathering information about the projects that should exist for the build
+2. Configuration phase
+   - Parses and evaluates the configuration logic, here tasks actions are not executed, only configured
+   - configuration code configures the project and its tasks
+3. Execution phase
+   - executes tasks in the correct order based on the DAG
+   - any logic that is executed here should be defined as part of the doFirst or doLast 
+
+## 12 Plugins and Domain Objects ##

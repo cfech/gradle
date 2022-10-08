@@ -1,0 +1,18 @@
+//Uses GROOVY DSL
+
+//keyword task is a method call on an api available on the gradle.build script
+
+// () for method calls are optional, helloWorld, or the name is actually the first parameter of the task method call 
+
+// This would also work -> task( "helloWorld" ) {
+
+//this metho returns a new instance of type task
+
+task helloWorld {
+    
+    // the do last statement ensures the method included is called at run time - lifecylce?
+    doLast {
+        //println is a method provided by groovy to print to stdout
+        println "Hello world with Groovy DSL"
+    }
+}
