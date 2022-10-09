@@ -4,32 +4,32 @@
 
 - solves the problem of building and deploying an application once it is written
 - framework for building a project
-- turns java class, xml etc into jar and war files
+- turns java classes, xml etc into jar and war files
  
 - Both builds the deployment artifacts and manages the dependencies
  
 - Artifacts can be : java source code, xml configuration files, audio or graphic files etc...
 - Predecessors to GRADLE include Maven, IVY and ANT. These are configured with XML which is not the most user friendly
 
-- In 2007 Gradle was introduced, it is written in a Java variant called Groovy, this is much more user friendly because we are writhing configurations as code
+- In 2007 Gradle was introduced, it is written in a Java variant called Groovy (or Kotlin), this is much more user friendly because we are writhing configurations as code
 
 ### The 6 Key Pieces of Gradle ###
 1. Build File or build.gradle : must have a build file, 
    - this is both a human and machine readable instruction file, 
    - uses DSL (Domain Specific Language) at a higher level and Groovy (or Kotlin) at a low level.
-   - Default name is built gradle 
+   - Default name is build.gradle 
 
 2. Constructs a Graph of Tasks
    - tasks are detailed build build steps
-   - gradle parses the build.gradle to create a directed acyclic graph (DAG) of tasks, ie task1 -> task 2 -> task 3 ...
+   - gradle parses the build.gradle to create a Directed Acyclic (one way only) Graph (DAG) of tasks, ie task1 -> task 2 -> task 3 ...
 
 3. Gradle Executes the Tasks
    - knows the order to do tasks in based on the DAG
-   - Each task produces an output used an an input by the next task
+   - Each task produces an output used that can be used as an input by the next task
    - it saves the output of each task (this step can help with performance improvement by caching tasks outputs for tasks that have not changed and skip the task on a re-build)
 
 4. Manages Dependencies
-   - IE maven, plugins etc...
+   - ie: maven, plugins etc...
    - Also manages transitive dependencies, ie: dependencies of dependencies
    - Can also handle dependency versions
 
@@ -52,38 +52,38 @@ Basic Terminology
 - to see a helloWorld in gradle navigate too ./hello-world/build.gradle
   - can run with ```gradle [taskName]```
 
-## 6 Gradle's DL ##
+## 6 Gradle's DSL ##
 - can mix in imperative logic 
-- can use GROOVY DSL or Kotlin DSL
+- can use Groovy DSL or Kotlin DSL
 - can see kotlin example ./hello-world-kotlin/build.gradle.kts
    - has to be named build.gradle.kts
    - seems that by default a build.gradle will override build.gradle.kts if they are in the same directory, maybe some configuration to change this
 
 ## 7 Gradle Wrapper ##
 - Gradle API can have breaking changes during major version updates
-- maintaining multiple different gradle version on your machine for different projects in inconvenient 
+- maintaining multiple different gradle version on your machine for different projects is in inconvenient 
 
 - The Gradle wrapper is a set of files checked into version control with source code
-   - The wrapper standardizes a compatible gradle version fot he project
-   - It will the automatically download the defined version of Gradle
+   - The wrapper standardizes a compatible gradle version for the project
+   - It will automatically download the defined version of Gradle
 
 - You can create the gradle wrapper by running ```gradle wrapper```
    - this will create a gradle folder that houses a gradle-wrapper.jar and a gradle-wrapper.properties 
    - it also creates a gradlew shell script, and gradlew.bat(for windows)
    - This now exposes the gradlew command within the project, to run the tasks now we can use ```.gradlew [task name]```
-   - when using gradlew gradle will automatically downloaded the distribution needed to run the task based on what was defined in the jar and properties files
-   - When using a wrapper it is no necessary to have gradle installed on your machine, however you do need it to create the wrapper
+   - when using gradlew gradle will automatically download the distribution needed to run the task based on what has been defined in the jar and properties files
+   - When using a wrapper it is not necessary to have gradle installed on your machine, however you do need it to create the wrapper
 
-- **With the wrapper method, other developers do not even need to install gradle on their machines, they can just checkout the code (as long as wrapper is store in VCS) and run gradle commands with ```./gradlew [taskName]```
+- **With the wrapper method, other developers do not even need to install gradle on their machines, they can just checkout the code (as long as wrapper is store in VCS) and run gradle commands with ```./gradlew [taskName]```**
 
 ## 9 Build Files ##
-- Build file in a single project built 
+- Build file in a single module/project build 
    - resides in root directory of project hierarchy
    - contains all build logic
    - can be hard to maintain 
 
-- Build in multi-module build
-   - have a build.gradle that contains modules which contain their own build.gradle
+- Build file in multi-module build
+   - There is a build.gradle that contains modules which contain their own build.gradle
    - more maintainable and highly cohesive
    - gradle can model each component as a project with dependencies of each other
 
@@ -101,16 +101,15 @@ Basic Terminology
   - ./gradle-wrapper-hello-world/gradle.properties
   - resides in the root directory of project (for one offs) or ~/.gradle (for all projects on machine)
   - can be used to pre-configure runtime behavior
-  - means to externalize custom key values pairs, can set versions, logging levels etc
+  - can setup custom env vars, set versions, logging levels etc
   - can access these values in the build script by key 
 
 ## 10 Tasks ##
-- defines an executable unit of work
-- actions contain logic to be executed a runtime
-- ad hoc tasks and tasks explicitly declare a type
+- define an executable unit of work
+- actions (ex: doLast) contain logic to be executed a runtime
 
 ### AD HOC vs Typed Tasks ###
-- AD hoc implements off-off simplistic actions by defining a doFirs or doLast
+- ad hoc task implement one-off simplistic actions by defining a doFirst or doLast
 
 - Automatically extend the default task with out having to declare it 
 
@@ -122,8 +121,9 @@ ex:
          }
       }
    
-- Typed tasks allow for more complex task logic, this task explicitly declares a type
-- does not necessarily need to define actions, may inherit them from the tasks it is extending 
+- Typed tasks allow for more complex task logic
+- Typed tasks explicitly declare a type
+- does not necessarily need to define actions, may inherit them from the task it is extending 
 - copy type can copy files and directories from A to B
 
 ex: 
@@ -144,14 +144,13 @@ another example:
          dependsOn copyFiles
       }
 
-- depends on calls copyFiles before its code runs
+- dependsOn calls copyFiles before the createZip method code runs
 
 ## DAG & Build Lifecycle Phases ##
-- https://docs.gradle.org/current/dsl/org.gradle.api.Task.html#N18B7E
-- https://docs.gradle.org/current/dsl/org.gradle.api.Task.html#N18C9B
-- 
-- directed acyclic graph
-- if A depends on B and A also depends on C, the B & C can run in any order, however they will both run before A
+- [Properties](https://docs.gradle.org/current/dsl/org.gradle.api.Task.html#N18B7E)
+- [Methods](https://docs.gradle.org/current/dsl/org.gradle.api.Task.html#N18C9B)
+- Directed Acyclic Graph 
+- if A depends on B and A also depends on C, then B & C can run in any order, however they will both run before A
 
 - Can use mustRunAfter if we always want C to run before B
 - other common caveats are shouldRunAfter and finalized by
@@ -159,14 +158,12 @@ another example:
    - shouldRunAfter - Specifies that this task should run after all of the supplied tasks.
    - finalizedBy - Adds the given finalizer tasks for this task.
 
-### Direct Acyclic Graph ###
+### Directed Acyclic Graph ###
 - a task is represented as a node
 - task dependency is represented as graph edge
-<!-- ![dag example](./images/dag_example.png) -->
+![dag example](./images/dag_example.png)
 - task A cannot depend on B while B depends on A
-
 - can run ```gradle [task] --dry-run ``` to see all gradle tasks/dependencies for that task
-
 - can use the [gradle task tree](https://github.com/dorongold/gradle-task-tree) plugin in order to render a task tree
 
 - can run ```gradlew tasks --all``` to see all gradle tasks available for the project
@@ -174,7 +171,7 @@ another example:
 - the DAG is built before any tasks is executed
    - when a tasks is called to be executed gradle will:
      
-     1.  Evaluate the instructions of the build scripts
+     1. Evaluate the instructions of the build scripts
      2. create and configure tasks 
      3. execute them in the correct order
 
@@ -190,3 +187,59 @@ LifeCycle Phases:
    - any logic that is executed here should be defined as part of the doFirst or doLast 
 
 ## 12 Plugins and Domain Objects ##
+- goal of plugins 
+   1. avoid repetitive code
+   2. make logic more maintainable
+   3. Provide reusable functionality across projects
+
+### Script Plugins vs Binary Plugins ##
+
+- Script plugin is another build script that can be included in your build.gradle
+  - ex : publishing.gradle or deployment.gradle
+  - can define tasks in these other files to better compartmentalize our task definitions
+
+- Binary Plugins are meant for mor complex logic
+   - implement as classes and bundled as jar files
+   - ex: java plugin or gradle core plugin
+
+### Domain Objects in Memory ###
+- [docs.gradle - domain objects/core types](https://docs.gradle.org/current/dsl/index.html#N100CA)
+- Gradle represents the DAG in memory
+- Each node of the graph represents a task
+- Tasks are just one domain object of a build
+- Domain objects can be inspected and modified from the build script
+
+- The Gradle Domain Object 
+   - org.gradle.invocation.gradle
+   - represents the invocation of build
+   - has knowledge of project hierarchy
+   - provides pointers to the higher level properties of a build (ex: users gradle home directory, ~/.gradle on mac)
+   - can register callback logic to react to certain events in a build
+
+- The Project Domain Object
+   - org.gradle.api.Project
+   - represents a software component and provides PAI access to object hierarchy
+   - could ask for the reference to the gradle instance
+   - could register new tasks
+   - could get and or modify the environmental properties ex: build output directory
+
+- The Task Domain Object
+   - org.gradle.api.Task
+   - performs actual work at run time
+   - represents unit of work with potential dependencies
+   - tasks define actions 
+
+- The Action Domain Object
+   - org.gradle.api.Action
+   - toFirst and toLast are actions
+   - Actual work performed during the execution phase
+
+- The Plugin Domain Object
+   - org.gradle.api.Plugin
+   - plugin has full access to the project it works on, can access other domain object by name or type and modify them as necessary
+   - provides reusable logic for a project (ex: build task that comes with the java plugin)
+
+## 13 Documentation ##
+- build script can be mapped to Gradle API
+- [gradle user manual](https://docs.gradle.org/current/userguide/userguide.html)
+- gradle is built with java so you can read the [java docs](https://docs.gradle.org/current/dsl/org.gradle.api.tasks.javadoc.Javadoc.html)

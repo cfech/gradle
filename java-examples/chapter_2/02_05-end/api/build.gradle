@@ -1,0 +1,25 @@
+plugins {
+    id 'maven-publish'
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'org.linkedinlearning'
+            artifactId = 'calculator'
+            from components.java
+        }
+    }
+    repositories {
+        /*maven {
+            url = "$rootProject.buildDir/m2repo"
+        }*/
+        maven {
+            url = 'http://localhost:8082/artifactory/libs-release-local/'
+            credentials {
+                username = 'admin'
+                password = 'admin_123'
+            }
+        }
+    }
+}

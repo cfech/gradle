@@ -1,0 +1,26 @@
+//applying the base plugin, this is from gradle
+apply plugin: "base"
+
+//once we define a copy type we can use its api, which comes with the methods from and into
+task copyFiles(type: Copy){
+    //from here, could be any file path
+         from "./"
+         //will create if doesnt exist
+         into ".build/docs"
+         //copy the markdown files
+         include "**/*md"
+         //exclue emptydirs
+         includeEmptyDirs = false
+
+         
+      }
+
+
+task createZip (type: Zip){
+    from ".build/docs"
+    archiveName = "example.zip"
+    destinationDir = file(".build/dist")
+
+    //can make this task depend on the previuos one and hence make it do the copyFile task first
+    dependsOn copyFiles
+}
