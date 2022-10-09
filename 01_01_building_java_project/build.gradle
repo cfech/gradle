@@ -1,0 +1,59 @@
+
+// ==================== PLUGINS ===============================
+
+//has to be first thing declared if have it
+plugins {
+    //imports the java plugin, which is natively shipped with gradle
+    id "java"
+    //import the application plugin
+    id "application"
+    id "com.dorongold.task-tree" version "2.1.0"
+}
+
+java {
+    //telling gradle we need a version of 11 for compatibility with our source code
+    sourceCompatibility(JavaVersion.VERSION_11)
+}
+
+//a task of the java plugin
+compileJava {
+    //stop the compilation if warning or error occurs
+    //docs https://docs.gradle.org/current/dsl/org.gradle.api.tasks.compile.CompileOptions.html#org.gradle.api.tasks.compile.CompileOptions
+
+        options.compilerArgs << "-Werror"
+    //    options.compilerArgs << "-verbose"
+}
+
+jar {
+    //this name task precedence over the rootProject.name in the settings gradle and the directory name
+//    archivesBaseName = "test"
+}
+
+//have to configure the mainClass of the application plugin in order to run the application
+application {
+    mainClass = "com.linkedinlearning.calculator.Main"
+}
+
+// ==================== DEPENDENCIES ===============================
+repositories {
+    //tell gradle to look at maven central
+    mavenCentral()
+}
+
+dependencies {
+    //can import classes of the dependecies in the code
+    implementation 'commons-cli:commons-cli:1.5.0'
+//    testImplementation "junit:junit"
+
+    //adding in spring boot will add a large transitive dependency tree
+    implementation 'org.springframework.boot:org.springframework.boot.gradle.plugin:2.7.4'
+}
+
+
+
+
+// ================= GENERAL CONFIG ==========================
+//this will be appended to the jar name
+//version = '1.0.0'
+//can define here or import from properties
+version = versionFromProperties

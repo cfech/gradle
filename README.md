@@ -198,7 +198,7 @@ LifeCycle Phases:
   - ex : publishing.gradle or deployment.gradle
   - can define tasks in these other files to better compartmentalize our task definitions
 
-- Binary Plugins are meant for mor complex logic
+- Binary Plugins are meant for mor complex logic ( MAVEN Dependencies)
    - implement as classes and bundled as jar files
    - ex: java plugin or gradle core plugin
 
@@ -243,3 +243,178 @@ LifeCycle Phases:
 - build script can be mapped to Gradle API
 - [gradle user manual](https://docs.gradle.org/current/userguide/userguide.html)
 - gradle is built with java so you can read the [java docs](https://docs.gradle.org/current/dsl/org.gradle.api.tasks.javadoc.Javadoc.html)
+
+## 15 Building a JAVA project ##
+- can run java compiler with ```javac src/main/java/com/linkedinlearning/calculator/*.java -d out```
+- can create a jar from the compiled code with ```jar cfv calculator.jar -C out .```
+
+### JAVA Gradle Plugin ###
+- [java plugin docs](https://docs.gradle.org/current/userguide/java_plugin.html#header)
+- shipped with gradle distribution
+- provides task tha use conventions and sensible defaults, such are source code directories , build output folders etc...
+- These defaults can be reconfigured in the build scrip to adapt to legacy/custom project structures
+
+Expected directory structure of the java plugin:
+  - src/main/java: contains production source code
+  - src/main/resources: contains resource files needed for runtime, such as properties, yml files, env vars etc...
+  - src/test/java: contains test source code
+  - src/test/resources: contains test resource files
+  - build/classes: contains compiled class files
+  - build/libs: contains generated jar files
+
+Provided Tasks:
+  - suited for triggering typical operations in java projects, such as build, test, lint etc...
+
+
+## 16 Compiling Java Source Code ##
+- we can use the compileJava tasks provided by the java plugin in order to compile our java source code
+- it assumes by default production source code will be under src/main/java
+- gradle will then have java compile the code with the java distribution on the system that is reference in the PATH
+- can run this task with ```./gradlew compileJava``, can find the compiled classes in the output directory ./build/classes
+- may have to also mix in the resource files with the compiled classes, we can do this will ```./gradlew processResources```, will copy files from src/main/resources to the build directory
+- ```./gradlew classes``` will do both compileJava and processResources
+
+### Packaging a Jar ###
+- jar - java archive file 
+- ```./gradlew jar``` will use he jar task to compile classes and resources into a jar, it will output he jar in ./build/libs
+   - this will also triggered compilation if not configured yet
+   - the jar tasks will pick up when a file is changed and re-compile the class and/or resource files if necessary
+   - name of the file resembles the project directory if not set explicitly via archiveBaseName or telling the task to use a different name
+   - can also set the "rootProject.name" in the settings.gradle
+   - jar name hierarchy: jar{archivesBaseName} > rootProject.name > directory name
+   - can customize the jar packing [see docs here](https://docs.gradle.org/current/dsl/org.gradle.jvm.tasks.Jar.html#org.gradle.jvm.tasks.Jar)
+
+## 17 Application Plugin ##
+- see ./01_01_building_java_project/build.gradle
+- java can produce libraries or executable programs from source code
+- java plugin can help us produce both
+- application plugin helps with running the application directly from the build or produces an executable distribution
+- can run the application for local development with ```./gradlew run```, can pass args with --args'add 1 2'
+- ```./gradlew installDst```  generate the application , outputs to ./build/install
+- ```./gradlew distZip`` budless the distribution into a Zip, outputs to ./build/distributors, will call compileJava, compileResources, jar, and installDist as dependencies
+- ```./gradlew distTar`` budless the distribution into a TAR,  outputs to ./build/distributors, will call compileJava, compileResources, jar, and installDist as dependencies
+
+## 18 Understanding Dependencies ##
+- java ecosystem has been producing mature/well build and well thought out dependencies for decades 
+- many of the most popular open source libraries are available on maven central
+- maven central is a central hosted binary repository 
+- at build time, gradle will download dependency artifacts (from maven central or any other binary repository), store them in the local cache and add them to the class path of the project
+
+Dependency Scope - when is a dependency needed:
+   - compilation and runtime
+   - only runtime
+   - test compilation and execution
+
+Project Dependency:
+   - can separate dependency based on modules/components
+   - project composed of multiple modules can depend on each other (multi project build ----[LINK ----])
+
+Artifact Publishing
+   - can build and publish binaries as artifacts on a binary repository(such a maven repo) in order for you or other to re-use as dependencies in other project at a later time
+
+### Dependency Declaration ###
+- ./01_01_building_java_project/build.gradle
+- have to know the dependency coordinates
+- GAV - group, artifact, version
+![dependency coordinates](./images/gav.png)
+
+```
+dependencies {
+    implementation 'commons-cli:commons-cli:1.5.0'
+    testImplementation "junit:junit"
+
+}
+```
+
+- implemetations will add to the compileClassPath, runtTimeClasspath, testCompileClassPath and testRuntimeClasspath
+- testImplementation will add to only testCompileClassPath and testRuntimeClasspath
+
+![dependency coordinates](./images/maven_classpaths.png)
+
+
+## 19 Dependency Tree ##
+- declared dependencies often pull in transitive dependencies
+- this can result in a large tree of dependencies to manage
+- ```./gradlew dependencies``` will show us the dependency tree
+- ```./gradlew dependencyInsight --dependency [my dep]``` can help answer why a dependency is needed and where it is coming from
+
+
+## 20 Project Dependency ##
+- when we have a multi build project one piece of the project must have a dependency for another piece
+- see ./java-examples/chapter_2/02_04-end/build.gradle for example
+- in the parent build.gradle we declare the dependencies 
+
+```
+allprojects {
+    version = '1.0.0'
+}
+
+subprojects {
+    apply plugin: 'java'
+
+    java {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+}
+```
+- the settings.gradle and gradle wrapper still live at the root level of the project
+
+- can then run ```./gradlew projects``` in order to see required projects 
+
+![project dependencies](./images/project_deps.png)
+
+- in this scenario the app project needs the api project as a dependency, can assign the api module in the dependencies block of the app project build .gradle 
+- this makes the api project a binary dependency of the app project
+
+- java-examples/chapter_2/02_04-end/app/build.gradle
+```
+dependencies {
+    implementation project(':api')
+    implementation 'commons-cli:commons-cli:1.4'
+}
+```
+- gradle will automatically rebuild project dependencies if any of the dependency source code changes 
+
+## 21 Publishing Libraries ##
+- to make a project reusable as a dependency by others you have to publish to a binary repository (such as maven central)
+- a published library can be identified by its coordinates (GAV) --- LINK ----[]()
+
+- the maven publish plugin can help us with publishing our own plugins
+
+- 
+
+``` ./java-examples/chapter_2/02_05-end/api/build.gradle
+plugins {
+    id 'maven-publish'
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+         //group ID 
+            groupId = 'org.linkedinlearning'
+            //artifact ID, version defined in build.gradle or settings.gradle
+            artifactId = 'calculator'
+            from components.java
+        }
+    }
+    repositories {
+      //this can point to maven central etc...
+        maven {
+            url = "$rootProject.buildDir/m2repo"
+        }
+
+        //example of local running repository
+       /* maven {
+            url = 'http://localhost:8082/artifactory/libs-release-local/'
+            credentials {
+                username = 'admin'
+                password = 'admin_123'
+            }*/
+        }
+    }
+}
+```
+
+## 22 JUnit ##
