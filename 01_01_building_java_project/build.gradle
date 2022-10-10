@@ -2,6 +2,7 @@
 // ==================== PLUGINS ===============================
 
 //has to be first thing declared if have it
+//Plugins are used for adding functionally to gradle
 plugins {
     //imports the java plugin, which is natively shipped with gradle
     id "java"
@@ -40,16 +41,24 @@ repositories {
     mavenCentral()
 }
 
+//Plugins are used for adding functionally to gradle
+//Dependencies are used for adding functionality to src code
 dependencies {
-    //can import classes of the dependecies in the code
-    implementation 'commons-cli:commons-cli:1.5.0'
-//    testImplementation "junit:junit"
+    implementation 'commons-cli:commons-cli:1.4'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
 
     //adding in spring boot will add a large transitive dependency tree
-    implementation 'org.springframework.boot:org.springframework.boot.gradle.plugin:2.7.4'
+    //implementation 'org.springframework.boot:org.springframework.boot.gradle.plugin:2.7.4'
 }
 
-
+//use JUnit 5, uses 4 by default
+test {
+    useJUnitPlatform()
+    testLogging {
+        events 'started', 'skipped', 'failed'
+    }
+}
 
 
 // ================= GENERAL CONFIG ==========================
